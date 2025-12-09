@@ -9,5 +9,8 @@ data class Profile(
     val id: Int = 0,
     val name: String,
     val email: String,
-    val phone: String
+    val phone: String,
+    val dob: String,        // 👈 added
+    val district: String    // 👈 added
 )
+

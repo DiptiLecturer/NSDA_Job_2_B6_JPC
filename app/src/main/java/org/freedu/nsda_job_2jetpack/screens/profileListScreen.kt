@@ -2,8 +2,8 @@ package org.freedu.nsda_job_2jetpack.screens
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.material3.FloatingActionButtonDefaults
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -13,13 +13,11 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.FabPosition
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -31,86 +29,66 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import org.freedu.nsda_job_2jetpack.R
+import org.freedu.nsda_job_2jetpack.data.ProfileApp
 import org.freedu.nsda_job_2jetpack.viewModel.ProfileViewModel
+import org.freedu.nsda_job_2jetpack.viewModel.ProfileViewModelFactory
 
 @Composable
 fun ProfileListScreen(
-    navController: NavController,
-    viewModel: ProfileViewModel = viewModel()
+    navController: NavController
 ) {
-    // Collect profiles as state
-    val profiles by viewModel.allProfiles.collectAsState()
+    val context = LocalContext.current
+    val viewModel: ProfileViewModel = viewModel(
+        factory = ProfileViewModelFactory(
+            (context.applicationContext as ProfileApp).repository
+        )
+    )
+
+    val profiles by viewModel.allProfiles.collectAsState(initial = emptyList())
 
     Scaffold(
         modifier = Modifier.fillMaxSize(),
-        containerColor = Color.White, // Scaffold background
+        containerColor = Color.White,
         floatingActionButton = {
             FloatingActionButton(
                 onClick = { navController.navigate("add") },
-                modifier = Modifier.size(80.dp), // slightly bigger FAB
-                containerColor = Color.White,    // FAB background
-                contentColor = Color.Black,      // icon color
-                shape = CircleShape,             // round FAB
-                elevation = FloatingActionButtonDefaults.elevation(
-                    defaultElevation = 8.dp,
-                    pressedElevation = 12.dp
-                )
+                containerColor = Color.Black, // Black background
+                contentColor = Color.White     // Icon color
             ) {
                 Icon(
                     painter = painterResource(id = R.drawable.add_ic),
                     contentDescription = "Add Profile",
-                    modifier = Modifier.size(50.dp)
+                    tint = Color.White, // Ensure icon is white
+                    modifier = Modifier.size(28.dp) // adjust size if needed
                 )
             }
-        },
-        floatingActionButtonPosition = FabPosition.End
+        }
+
     ) { paddingValues ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValues)
-        ) {
-
-            // Total Profiles header
+        Column(modifier = Modifier.padding(paddingValues)) {
             Text(
-                text = "Total Profiles: ${profiles.size}",
-                modifier = Modifier
-                    .padding(horizontal = 18.dp, vertical = 22.dp),
-                color = Color.DarkGray,
+                "Total Profiles: ${profiles.size}",
+                fontSize = 20.sp,
                 fontWeight = FontWeight.Bold,
-                fontSize = 20.sp
+                modifier = Modifier.padding(16.dp)
             )
-
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(8.dp))
 
             if (profiles.isEmpty()) {
-                // Empty state
-                Column(
-                    modifier = Modifier.fillMaxSize(),
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.Center
-                ) {
-                    Text(
-                        text = "No profiles found.\nClick the '+' icon to create a new profile.",
-                        color = Color.Gray,
-                        fontWeight = FontWeight.Medium,
-                        fontSize = 16.sp,
-                        textAlign = TextAlign.Center,
-                        modifier = Modifier.padding(8.dp)
-                    )
+                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                    Text("No profiles found. Click '+' to add.", color = Color.Gray)
                 }
             } else {
-                // Profiles list
                 LazyColumn(
-                    contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
+                    contentPadding = PaddingValues(16.dp),
                     verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
                     items(profiles) { profile ->
@@ -123,43 +101,50 @@ fun ProfileListScreen(
                         ) {
                             Row(
                                 modifier = Modifier
-                                    .padding(12.dp)
-                                    .fillMaxWidth(),
+                                    .fillMaxWidth()
+                                    .padding(16.dp),
                                 horizontalArrangement = Arrangement.SpaceBetween,
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
+                                // Profile info on the left
                                 Column(
                                     verticalArrangement = Arrangement.Center
                                 ) {
                                     Text(
-                                        text = profile.name,
+                                        "Name: ${profile.name}",
+                                        fontSize = 22.sp,
                                         fontWeight = FontWeight.Bold,
-                                        fontSize = 28.sp,
                                         color = Color.Black
                                     )
-                                    Spacer(modifier = Modifier.height(14.dp))
-                                    Text(
-                                        text = profile.email,
-                                        fontSize = 24.sp,
-                                        color = Color.DarkGray
+                                    Text("Email: ${profile.email}",
+                                        fontSize = 18.sp,
+                                        color = Color(0xFF1E88E5)
                                     )
-                                    Spacer(modifier = Modifier.height(14.dp))
+                                    Text("Phone: ${profile.phone}",
+                                        fontSize = 16.sp,
+                                        color = Color(0xFF00897B)
+                                    )
                                     Text(
-                                        text = profile.phone,
+                                        "DOB: ${profile.dob}",
                                         fontSize = 16.sp,
                                         color = Color.DarkGray
                                     )
-                                    Spacer(modifier = Modifier.height(14.dp))
+                                    Text(
+                                        "District: ${profile.district}",
+                                        fontSize = 16.sp,
+                                        color = Color(0xFF039BE5)
+                                    )
                                 }
 
+                                // Delete button on the right
                                 IconButton(
                                     onClick = { viewModel.delete(profile) },
                                     modifier = Modifier
                                         .size(40.dp)
-                                        .background(Color.DarkGray, shape = CircleShape)
+                                        .background(Color.Red, shape = CircleShape)
                                 ) {
                                     Icon(
-                                        painter = painterResource(R.drawable.delete),
+                                        painter = painterResource(id = R.drawable.delete),
                                         contentDescription = "Delete",
                                         tint = Color.White
                                     )
@@ -168,9 +153,11 @@ fun ProfileListScreen(
                         }
                     }
                 }
+
             }
         }
     }
 }
+
 
 
